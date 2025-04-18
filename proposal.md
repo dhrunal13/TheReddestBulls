@@ -1,7 +1,6 @@
 # Project Proposal: Macro Drivers of Dollar Strength - A Cross-Currency Analysis 
 By - The Reddest Bulls
 
-
 ## Research Question
 
 ### Big Picture Question  
@@ -27,12 +26,16 @@ The value of a currency in foreign exchange markets is fundamentally linked to m
 - **Balance of Payments Theory:** An improving trade balance increases demand for USD by reducing net outflows (**H3**).
 - **Heterogeneous Sensitivity Hypothesis:** Currency sensitivity depends on economic structure — e.g., trade dependency, monetary regime, or commodity reliance (**H4**).
 
-## Metrics of Success  
-This is primarily a **predictive regression** project, with interpretability and forecasting accuracy as key goals:
-- We will use **Ordinary Least Squares (OLS)** as the primary model to predict monthly changes in currency value based on U.S. macro data
-- Then measure performance using **out-of-sample RMSE, MAE**, and visual inspection of predicted vs. actual trends
-- Later track **coefficient stability and significance** across currencies to compare macro sensitivity
-- Finally we have it forecasts for 2023–present and a dashboard to simulate macroeconomic scenarios
+## Methodology & Evaluation  
+This is primarily a **predictive regression project** with emphasis on interpretability and comparative macro sensitivity across currencies. Key steps:
+
+- Use **OLS** as the main model to estimate macroeconomic sensitivity per currency.
+- Introduce a **second model** — such as **Lasso Regression** or **XGBoost** — to find the best prediction performance.
+- Evaluate using:
+  - **Out-of-sample RMSE & MAE**
+  - **Visual accuracy:** predicted vs actual FX trends
+  - **Significance & direction of coefficients** per macro indicator
+  - **Cross-currency comparison of sensitivity** via clustering
 
 ## Dashboard Design
 The final product will include an interactive dashboard to simulate, visualize, and interpret how macro variables impact dollar strength across currencies.
@@ -76,7 +79,7 @@ The final product will include an interactive dashboard to simulate, visualize, 
 
 ### Data Sources  
 - **FRED** for U.S. macro data  
-- **Investing.com**, **Yahoo Finance**, or **FRED** for exchange rates  
+- **Bloomberg Terminal** for exchange rates  
 - **OurWorldInData** for backup macro validation
 
 ### Collection & Structure  
