@@ -2,7 +2,7 @@
 
 | **Variable**   | **File Name**     | **Source**          | **Frequency** | **Description** |
 |----------------|-------------------|---------------------|---------------|------------------|
-| **USD to Euro**        | `USD-EUR.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Euro (inverted from EUR/USD where needed) |
+| **USD to Euro**        | `USD-EUR.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Euro |
 | **USD to British Pound** | `USD-GBP.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per British Pound |
 | **USD to Canadian Dollar** | `USD-CAD.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Canadian Dollar |
 | **USD to Australian Dollar** | `USD-AUD.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Australian Dollar |
