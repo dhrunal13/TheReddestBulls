@@ -7,7 +7,7 @@
 | **USD to Canadian Dollar** | `USD-CAD.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Canadian Dollar |
 | **USD to Australian Dollar** | `USD-AUD.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Australian Dollar |
 | **USD to New Zealand Dollar** | `USD-NZD.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per New Zealand Dollar |
-| **USD to Japanese Yen** | `USD-JPY.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per 100 Japanese Yen |
+| **USD to Japanese Yen** | `USD-JPY.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Japanese Yen |
 | **USD to Swiss Franc** | `USD-CHF.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Swiss Franc |
 | **USD to Hong Kong Dollar** | `USD-HKD.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Hong Kong Dollar |
 | **USD to Chinese Yuan** | `USD-CNY.xlsx` | Bloomberg Terminal | Monthly       | U.S. Dollar per Chinese Yuan Renminbi |
