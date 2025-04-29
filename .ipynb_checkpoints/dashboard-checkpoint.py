@@ -143,76 +143,197 @@ with tab5:
 
 with tab6:
     st.markdown("## Scenario Simulator")
-    st.write("Simulate hypothetical changes in U.S. macro variables and observe predicted impacts on FX rates.")
+    st.write("Simulate hypothetical changes in U.S. macro variables and forecast FX rates over 5, 7, or 10 years.")
 
-    @st.cache_data
-    def load_data():
-        fp = Path(__file__).parent / "forex_merged_cleaned.csv"
-        if not fp.exists():
-            st.error("❌ 'forex_merged_cleaned.csv' not found next to this script.")
-            st.stop()
-        df = pd.read_csv(fp)
-        date_cols = [c for c in df.columns if 'date' in c.lower()]
-        if not date_cols:
-            st.error("❌ No date column found. Rename your date header to include 'date'.")
-            st.stop()
-        dc = date_cols[0]
-        df[dc] = pd.to_datetime(df[dc], errors='coerce')
-        return df.set_index(dc)
+    # --- User Selections ---
+    st.markdown("### 1. Select Forecast Settings")
 
-    data = load_data()
-    currencies = sorted(data.columns.tolist())
-    currency = st.selectbox("Select FX Pair", currencies)
+    currency_options = [
+        "USD-EUR", "USD-JPY", "USD-GBP", "USD-CHF", "USD-CAD",
+        "USD-AUD", "USD-NZD", "USD-CNY", "USD-HKD", "USD-XAU"
+    ]
+    selected_currencies = st.multiselect("Select Currency Pairs", options=currency_options, default=["USD-EUR"])
 
-    macro_map = {
-        'Interest Rate': 'fed_funds_rate',
-        'CPI': 'cpi',
-        'Core CPI': 'core_cpi',
-        'Industrial Production': 'ipi',
-        'Trade Balance': 'trade_balance',
-        'Unemployment Rate': 'unemployment_rate',
-        'Consumer Sentiment': 'consumer_sentiment',
-        'Retail Sales': 'retail_sales',
-        'Manufacturing PMI': 'manufacturing_pmi',
-        'S&P 500 % Change': 'sp500_return',
-        'VIX': 'vix'
-    }
-    macro_display = st.selectbox("Select Macro Indicator", list(macro_map.keys()))
+    macro_options = [
+        'Interest Rate', 'Inflation (CPI)', 'Core Inflation', 'Industrial Production',
+        'Trade Balance', 'Unemployment Rate', 'Consumer Sentiment', 'Retail Sales',
+        'Manufacturing PMI', 'S&P 500 Index', 'VIX Index'
+    ]
+    selected_macros = st.multiselect("Select Macroeconomic Indicators", options=macro_options, default=['Interest Rate', 'Inflation (CPI)'])
 
-    change_pct = st.slider("Adjust Macro Change (%)", -5.0, 5.0, 0.5, 0.1)
     model_choice = st.selectbox("Select Model", ["OLS", "Lasso", "XGBoost"])
+    forecast_years = st.number_input(
+    "Select Forecast Horizon (Years)",
+    min_value=1,
+    max_value=20,
+    value=5,
+    step=1
+)
 
-    if st.button("Run Simulation"):
-        feat = list(macro_map.values())
-        X = np.zeros(len(feat))
-        X[feat.index(macro_map[macro_display])] = change_pct
-        code = currency.split('-')[-1].lower()
-        model_fp = Path(__file__).parent / "models" / f"{model_choice.lower()}_{code}.pkl"
-        if model_fp.exists():
-            with open(model_fp, 'rb') as f:
-                model = pickle.load(f)
-            pred = model.predict(X.reshape(1, -1))[0]
-            st.metric(f"Predicted change in {currency}", f"{pred:.2f}%")
-        else:
-            st.warning(f"Model not found: {model_fp.name}")
 
     st.markdown("---")
-    st.markdown("### Cross-Currency Sensitivity to Selected Macro Variable")
-    st.write("Bar chart of OLS coefficients for a one-unit change in the selected macro.")
+    st.markdown("### 2. Adjust Macroeconomic Scenario")
 
-    @st.cache_data
-    def load_coeffs():
-        fp = Path(__file__).parent / "ols_coefficients.csv"
-        if not fp.exists():
-            st.error("❌ 'ols_coefficients.csv' missing. Provide a file with ['currency','indicator','coefficient'].")
-            st.stop()
-        return pd.read_csv(fp)
+    macro_adjustments = {}
+    for macro in selected_macros:
+        adj = st.slider(f"Adjust %s (%%)" % macro, -5.0, 5.0, 0.5, step=0.1)
+        macro_adjustments[macro] = adj
 
-    coeffs = load_coeffs()
-    ind = macro_map[macro_display]
-    if set(['currency','indicator','coefficient']).issubset(coeffs.columns):
-        sub = coeffs[coeffs['indicator'] == ind]
-        chart = sub.set_index('currency')['coefficient']
-        st.bar_chart(chart)
-    else:
-        st.info("Provide 'ols_coefficients.csv' as long-form with columns: currency, indicator, coefficient.")
+    st.markdown("---")
+
+    use_log_scale = st.checkbox("Use Log Scale for Forecast Graph", value=True)
+
+    if st.button("Run Simulation"):
+        from run_forex_model import run_forex_model
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        import numpy as np
+        import pandas as pd
+        import plotly.graph_objects as go
+
+        real_metrics, future_predictions = run_forex_model(
+            selected_currencies=selected_currencies,
+            selected_macros=selected_macros,
+            selected_model=model_choice,
+            macro_adjustments=macro_adjustments,
+            future_years=forecast_years
+        )
+
+        st.session_state['real_metrics'] = real_metrics
+        st.session_state['future_predictions'] = future_predictions
+
+        st.success("Simulation completed. Forecast and correlation matrices available below.")
+
+    if 'future_predictions' in st.session_state:
+        import plotly.graph_objects as go
+        import numpy as np
+        import pandas as pd
+
+        future_predictions = st.session_state['future_predictions']
+        real_metrics = st.session_state['real_metrics']
+
+        st.markdown("### Model Performance on Real 2023–2025 Data")
+        st.dataframe(real_metrics)
+
+        # --- Forecasted Forex Plot ---
+        st.markdown(f"### Forecasted Forex Rates for Next {forecast_years} Years")
+
+        fig = go.Figure()
+        for currency in selected_currencies:
+            df = future_predictions[future_predictions['Currency'] == currency]
+            fig.add_trace(go.Scatter(
+                x=df['DATE'],
+                y=df['Predicted_Forex_Rate'],
+                mode='lines+markers',
+                name=currency,
+                line=dict(width=2),
+                marker=dict(size=4),
+                hovertemplate=(
+                    "<b>%s</b><br>Date: %%{x|%%b %%Y}<br>Rate: %%{y:.4f}<extra></extra>" % currency
+                )
+            ))
+
+        if use_log_scale:
+            fig.update_yaxes(type="log", title="Predicted Forex Rate (Log Scale)")
+            fig.update_layout(title="Forecasted Forex Rates (Log Scale)")
+        else:
+            fig.update_yaxes(title="Predicted Forex Rate (Linear Scale)")
+            fig.update_layout(title="Forecasted Forex Rates (Linear Scale)")
+
+        fig.update_layout(
+            xaxis_title="Date",
+            legend_title="Currency",
+            hovermode="x unified",
+            template="plotly_white",
+            height=450,
+            margin=dict(t=50, b=30, l=50, r=20)
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        # --- Download Forecasted Future Predictions ---
+        st.markdown("### Download Forecasted Future Predictions")
+        future_csv = future_predictions.to_csv(index=False)
+        st.download_button(
+            label="Download Future Predictions CSV",
+            data=future_csv,
+            file_name='future_predictions.csv',
+            mime='text/csv'
+        )
+
+        # --- Correlation Matrices ---
+        st.markdown("### Correlation Matrices")
+
+        macro_raw = pd.read_csv("macro_data.csv", parse_dates=["DATE"]).set_index("DATE")
+        forex_raw = pd.read_csv("forex_merged_cleaned.csv", parse_dates=["DATE"]).set_index("DATE")
+
+        macro_selected = macro_raw[selected_macros].dropna()
+        macro_corr_matrix = macro_selected.corr()
+
+        forex_log_returns = np.log(forex_raw / forex_raw.shift(1)).dropna()
+        combined_df = pd.merge(macro_selected, forex_log_returns[selected_currencies], left_index=True, right_index=True).dropna()
+        macro_to_forex_corr = combined_df.corr().loc[selected_macros, selected_currencies]
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### Macro-Macro Correlation (Interactive)")
+            fig_corr_macro = go.Figure(
+                data=go.Heatmap(
+                    z=macro_corr_matrix.values,
+                    x=macro_corr_matrix.columns,
+                    y=macro_corr_matrix.index,
+                    colorscale='RdBu',
+                    zmin=-1,
+                    zmax=1,
+                    colorbar=dict(title="Corr"),
+                    hovertemplate='Macro 1: %{y}<br>Macro 2: %{x}<br>Corr: %{z:.2f}<extra></extra>'
+                )
+            )
+            fig_corr_macro.update_layout(
+                title="Macro ↔ Macro Correlation",
+                height=400,
+                margin=dict(t=40, b=30)
+            )
+            st.plotly_chart(fig_corr_macro, use_container_width=True)
+
+        with col2:
+            st.markdown("#### Macro-Forex Correlation (Interactive)")
+            fig_corr_macrofx = go.Figure(
+                data=go.Heatmap(
+                    z=macro_to_forex_corr.values,
+                    x=macro_to_forex_corr.columns,
+                    y=macro_to_forex_corr.index,
+                    colorscale='RdBu',
+                    zmin=-1,
+                    zmax=1,
+                    colorbar=dict(title="Corr"),
+                    hovertemplate='Macro: %{y}<br>Currency: %{x}<br>Corr: %{z:.2f}<extra></extra>'
+                )
+            )
+            fig_corr_macrofx.update_layout(
+                title="Macro ↔ Forex Correlation",
+                height=400,
+                margin=dict(t=40, b=30)
+            )
+            st.plotly_chart(fig_corr_macrofx, use_container_width=True)
+
+        # --- Download Correlation Matrices ---
+        st.markdown("### Download Correlation Matrices")
+        macro_corr_csv = macro_corr_matrix.to_csv()
+        macro_forex_corr_csv = macro_to_forex_corr.to_csv()
+
+        st.download_button(
+            label="Download Macro-Macro Correlation CSV",
+            data=macro_corr_csv,
+            file_name='macro_correlation_matrix.csv',
+            mime='text/csv'
+        )
+
+        st.download_button(
+            label="Download Macro-Forex Correlation CSV",
+            data=macro_forex_corr_csv,
+            file_name='macro_forex_correlation_matrix.csv',
+            mime='text/csv'
+        )
+
