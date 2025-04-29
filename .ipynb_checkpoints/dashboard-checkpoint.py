@@ -1,7 +1,10 @@
 # dashboard.py
 
 import streamlit as st
-
+import pandas as pd
+import numpy as np
+import pickle
+from pathlib import Path  # Fix: import Path here
 # ---------------------------------
 # Page Configuration
 # ---------------------------------
@@ -140,13 +143,76 @@ with tab5:
 
 with tab6:
     st.markdown("## Scenario Simulator")
-    st.write("""
-    Simulate the effects of hypothetical macroeconomic changes on FX rates.
+    st.write("Simulate hypothetical changes in U.S. macro variables and observe predicted impacts on FX rates.")
 
-    Planned Features:
-    - Currency and macroeconomic indicator selectors
-    - Adjustable macro parameter sliders
-    - Model choice toggle (OLS vs Lasso/XGBoost)
-    - Forecasted FX rate impact visualization
-    """)
+    @st.cache_data
+    def load_data():
+        fp = Path(__file__).parent / "forex_merged_cleaned.csv"
+        if not fp.exists():
+            st.error("❌ 'forex_merged_cleaned.csv' not found next to this script.")
+            st.stop()
+        df = pd.read_csv(fp)
+        date_cols = [c for c in df.columns if 'date' in c.lower()]
+        if not date_cols:
+            st.error("❌ No date column found. Rename your date header to include 'date'.")
+            st.stop()
+        dc = date_cols[0]
+        df[dc] = pd.to_datetime(df[dc], errors='coerce')
+        return df.set_index(dc)
 
+    data = load_data()
+    currencies = sorted(data.columns.tolist())
+    currency = st.selectbox("Select FX Pair", currencies)
+
+    macro_map = {
+        'Interest Rate': 'fed_funds_rate',
+        'CPI': 'cpi',
+        'Core CPI': 'core_cpi',
+        'Industrial Production': 'ipi',
+        'Trade Balance': 'trade_balance',
+        'Unemployment Rate': 'unemployment_rate',
+        'Consumer Sentiment': 'consumer_sentiment',
+        'Retail Sales': 'retail_sales',
+        'Manufacturing PMI': 'manufacturing_pmi',
+        'S&P 500 % Change': 'sp500_return',
+        'VIX': 'vix'
+    }
+    macro_display = st.selectbox("Select Macro Indicator", list(macro_map.keys()))
+
+    change_pct = st.slider("Adjust Macro Change (%)", -5.0, 5.0, 0.5, 0.1)
+    model_choice = st.selectbox("Select Model", ["OLS", "Lasso", "XGBoost"])
+
+    if st.button("Run Simulation"):
+        feat = list(macro_map.values())
+        X = np.zeros(len(feat))
+        X[feat.index(macro_map[macro_display])] = change_pct
+        code = currency.split('-')[-1].lower()
+        model_fp = Path(__file__).parent / "models" / f"{model_choice.lower()}_{code}.pkl"
+        if model_fp.exists():
+            with open(model_fp, 'rb') as f:
+                model = pickle.load(f)
+            pred = model.predict(X.reshape(1, -1))[0]
+            st.metric(f"Predicted change in {currency}", f"{pred:.2f}%")
+        else:
+            st.warning(f"Model not found: {model_fp.name}")
+
+    st.markdown("---")
+    st.markdown("### Cross-Currency Sensitivity to Selected Macro Variable")
+    st.write("Bar chart of OLS coefficients for a one-unit change in the selected macro.")
+
+    @st.cache_data
+    def load_coeffs():
+        fp = Path(__file__).parent / "ols_coefficients.csv"
+        if not fp.exists():
+            st.error("❌ 'ols_coefficients.csv' missing. Provide a file with ['currency','indicator','coefficient'].")
+            st.stop()
+        return pd.read_csv(fp)
+
+    coeffs = load_coeffs()
+    ind = macro_map[macro_display]
+    if set(['currency','indicator','coefficient']).issubset(coeffs.columns):
+        sub = coeffs[coeffs['indicator'] == ind]
+        chart = sub.set_index('currency')['coefficient']
+        st.bar_chart(chart)
+    else:
+        st.info("Provide 'ols_coefficients.csv' as long-form with columns: currency, indicator, coefficient.")
