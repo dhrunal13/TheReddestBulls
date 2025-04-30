@@ -129,20 +129,23 @@ with tab3:
 
     st.markdown("---")
     st.markdown("### Macroeconomic Factors Description")
-    try:
-        with open("macro_desc.md", "r", encoding='utf-8') as file:
-            macro_desc_text = file.read()
-        st.markdown(macro_desc_text)
-    except FileNotFoundError:
-        st.error("Macro description file not found.")
+    st.markdown("""
+    <div style='padding: 10px; background-color: #1e1e1e; border-left: 4px solid #C41E3A;'>
+    The macroeconomic dataset contains monthly data from FRED on key indicators such as interest rates, inflation, 
+    industrial production, trade balance, unemployment, consumer sentiment, and risk indices like the VIX and S&P 500. 
+    These variables were selected due to their theoretical and empirical linkages with FX movements and were preprocessed 
+    to remove missing values and align frequencies for modeling purposes.
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("### Forex Rates Description")
-    try:
-        with open("forex_desc.md", "r", encoding='utf-8') as file:
-            forex_desc_text = file.read()
-        st.markdown(forex_desc_text)
-    except FileNotFoundError:
-        st.error("Forex description file not found.")
+    st.markdown("""
+    <div style='padding: 10px; background-color: #1e1e1e; border-left: 4px solid #C41E3A;'>
+    The forex dataset includes monthly exchange rates for ten major USD pairs (e.g., USD-EUR, USD-JPY, USD-XAU). 
+    Each pair was transformed into log returns to stabilize variance and capture relative changes in value. 
+    These returns were then aligned with the macroeconomic data for use in forecasting models.
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("### Raw Data Snapshots")
@@ -174,7 +177,7 @@ with tab3:
             st.download_button("Download Forex EDA Report", forex_file, file_name="forex_eda_report.html", mime="text/html")
     except FileNotFoundError:
         st.error("Forex EDA HTML file not found.")
-
+        
 with tab4:
     st.markdown("## Static Analysis")
     st.write("""
