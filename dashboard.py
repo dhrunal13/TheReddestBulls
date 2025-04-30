@@ -106,15 +106,37 @@ with tab2:
     """)
 
 with tab3:
-    st.markdown("## Data Explorer")
-    st.write("""
-    Explore raw macroeconomic indicators and FX rate trends over time.
+    st.markdown("## Data Overview and Explorer")
 
-    Features coming soon:
-    - Dropdown selectors for currency and macro variables
-    - Interactive time series plots
-    - Customizable date ranges
+    st.write("""
+    This section provides an overview of the raw datasets and gives you access to download the full EDA reports.
+    
+    **Data Sources:**
+    - Macroeconomic Factors: Sourced from FRED. Includes indicators like Interest Rate, Inflation, Industrial Production, and others.
+    - Forex Rates: Historical currency exchange rates for major pairs such as USD-EUR, USD-JPY, etc.
+
+    Both datasets were cleaned, merged, and used for modeling and forecasting.
     """)
+
+    st.markdown("---")
+    st.markdown("### Macroeconomic Factors Description")
+    try:
+        with open("raw_data/Macroeconomic Factors/ForexDataDesc.md", "r", encoding='utf-8') as file:
+            macro_desc_text = file.read()
+        st.markdown(macro_desc_text)
+    except FileNotFoundError:
+        st.error("Macro description file not found.")
+
+    st.markdown("### Forex Rates Description")
+    try:
+        with open("raw_data/Forex Rates/forex_desc.md", "r", encoding='utf-8') as file:
+            forex_desc_text = file.read()
+        st.markdown(forex_desc_text)
+    except FileNotFoundError:
+        st.error("Forex description file not found.")
+
+    st.markdown("---")
+    st.markdown("### Raw Data Snapshots")
 
 with tab4:
     st.markdown("## Static Analysis")
@@ -143,9 +165,8 @@ with tab5:
 
 with tab6:
     st.markdown("## Scenario Simulator")
-    st.write("Simulate hypothetical changes in U.S. macro variables and forecast FX rates over 5, 7, or 10 years.")
+    st.write("Simulate hypothetical changes in U.S. macro variables and forecast FX rates from 1 to 20 years.")
 
-    # --- User Selections ---
     st.markdown("### 1. Select Forecast Settings")
 
     currency_options = [
@@ -162,14 +183,7 @@ with tab6:
     selected_macros = st.multiselect("Select Macroeconomic Indicators", options=macro_options, default=['Interest Rate', 'Inflation (CPI)'])
 
     model_choice = st.selectbox("Select Model", ["OLS", "Lasso", "XGBoost"])
-    forecast_years = st.number_input(
-    "Select Forecast Horizon (Years)",
-    min_value=1,
-    max_value=20,
-    value=5,
-    step=1
-)
-
+    forecast_years = st.number_input("Select Forecast Horizon - Years (Enter a number between 1 to 20)", min_value=1, max_value=20, value=5, step=1)
 
     st.markdown("---")
     st.markdown("### 2. Adjust Macroeconomic Scenario")
@@ -180,7 +194,6 @@ with tab6:
         macro_adjustments[macro] = adj
 
     st.markdown("---")
-
     use_log_scale = st.checkbox("Use Log Scale for Forecast Graph", value=True)
 
     if st.button("Run Simulation"):
@@ -191,7 +204,7 @@ with tab6:
         import pandas as pd
         import plotly.graph_objects as go
 
-        real_metrics, future_predictions = run_forex_model(
+        real_metrics, future_predictions, test_prediction_df = run_forex_model(
             selected_currencies=selected_currencies,
             selected_macros=selected_macros,
             selected_model=model_choice,
@@ -201,6 +214,7 @@ with tab6:
 
         st.session_state['real_metrics'] = real_metrics
         st.session_state['future_predictions'] = future_predictions
+        st.session_state['test_prediction_df'] = test_prediction_df
 
         st.success("Simulation completed. Forecast and correlation matrices available below.")
 
@@ -211,13 +225,27 @@ with tab6:
 
         future_predictions = st.session_state['future_predictions']
         real_metrics = st.session_state['real_metrics']
+        test_prediction_df = st.session_state['test_prediction_df']
 
         st.markdown("### Model Performance on Real 2023–2025 Data")
         st.dataframe(real_metrics)
 
-        # --- Forecasted Forex Plot ---
-        st.markdown(f"### Forecasted Forex Rates for Next {forecast_years} Years")
+        st.markdown("### Actual vs Predicted Returns (2023–2025)")
+        for i in range(0, len(selected_currencies), 2):
+            cols = st.columns(2)
+            for j in range(2):
+                if i + j < len(selected_currencies):
+                    currency = selected_currencies[i + j]
+                    df = test_prediction_df[test_prediction_df['Currency'] == currency]
+                    with cols[j]:
+                        st.markdown(f"**{currency}: Actual vs Predicted Log Returns**")
+                        fig = go.Figure()
+                        fig.add_trace(go.Scatter(x=df['DATE'], y=df['Actual_Return'], mode='lines', name='Actual', line=dict(color='green')))
+                        fig.add_trace(go.Scatter(x=df['DATE'], y=df['Predicted_Return'], mode='lines', name='Predicted', line=dict(color='orange')))
+                        fig.update_layout(xaxis_title="Date", yaxis_title="Log Return", height=300, template="plotly_white")
+                        st.plotly_chart(fig, use_container_width=True)
 
+        st.markdown(f"### Forecasted Forex Rates for Next {forecast_years} Years")
         fig = go.Figure()
         for currency in selected_currencies:
             df = future_predictions[future_predictions['Currency'] == currency]
@@ -228,11 +256,8 @@ with tab6:
                 name=currency,
                 line=dict(width=2),
                 marker=dict(size=4),
-                hovertemplate=(
-                    "<b>%s</b><br>Date: %%{x|%%b %%Y}<br>Rate: %%{y:.4f}<extra></extra>" % currency
-                )
+                hovertemplate=("<b>%s</b><br>Date: %%{x|%%b %%Y}<br>Rate: %%{y:.4f}<extra></extra>" % currency)
             ))
-
         if use_log_scale:
             fig.update_yaxes(type="log", title="Predicted Forex Rate (Log Scale)")
             fig.update_layout(title="Forecasted Forex Rates (Log Scale)")
@@ -248,22 +273,13 @@ with tab6:
             height=450,
             margin=dict(t=50, b=30, l=50, r=20)
         )
-
         st.plotly_chart(fig, use_container_width=True)
 
-        # --- Download Forecasted Future Predictions ---
         st.markdown("### Download Forecasted Future Predictions")
         future_csv = future_predictions.to_csv(index=False)
-        st.download_button(
-            label="Download Future Predictions CSV",
-            data=future_csv,
-            file_name='future_predictions.csv',
-            mime='text/csv'
-        )
+        st.download_button("Download Future Predictions CSV", data=future_csv, file_name='future_predictions.csv', mime='text/csv')
 
-        # --- Correlation Matrices ---
         st.markdown("### Correlation Matrices")
-
         macro_raw = pd.read_csv("macro_data.csv", parse_dates=["DATE"]).set_index("DATE")
         forex_raw = pd.read_csv("forex_merged_cleaned.csv", parse_dates=["DATE"]).set_index("DATE")
 
@@ -290,11 +306,7 @@ with tab6:
                     hovertemplate='Macro 1: %{y}<br>Macro 2: %{x}<br>Corr: %{z:.2f}<extra></extra>'
                 )
             )
-            fig_corr_macro.update_layout(
-                title="Macro ↔ Macro Correlation",
-                height=400,
-                margin=dict(t=40, b=30)
-            )
+            fig_corr_macro.update_layout(title="Macro ↔ Macro Correlation", height=400, margin=dict(t=40, b=30))
             st.plotly_chart(fig_corr_macro, use_container_width=True)
 
         with col2:
@@ -311,29 +323,12 @@ with tab6:
                     hovertemplate='Macro: %{y}<br>Currency: %{x}<br>Corr: %{z:.2f}<extra></extra>'
                 )
             )
-            fig_corr_macrofx.update_layout(
-                title="Macro ↔ Forex Correlation",
-                height=400,
-                margin=dict(t=40, b=30)
-            )
+            fig_corr_macrofx.update_layout(title="Macro ↔ Forex Correlation", height=400, margin=dict(t=40, b=30))
             st.plotly_chart(fig_corr_macrofx, use_container_width=True)
 
-        # --- Download Correlation Matrices ---
         st.markdown("### Download Correlation Matrices")
         macro_corr_csv = macro_corr_matrix.to_csv()
         macro_forex_corr_csv = macro_to_forex_corr.to_csv()
 
-        st.download_button(
-            label="Download Macro-Macro Correlation CSV",
-            data=macro_corr_csv,
-            file_name='macro_correlation_matrix.csv',
-            mime='text/csv'
-        )
-
-        st.download_button(
-            label="Download Macro-Forex Correlation CSV",
-            data=macro_forex_corr_csv,
-            file_name='macro_forex_correlation_matrix.csv',
-            mime='text/csv'
-        )
-
+        st.download_button("Download Macro-Macro Correlation CSV", data=macro_corr_csv, file_name='macro_correlation_matrix.csv', mime='text/csv')
+        st.download_button("Download Macro-Forex Correlation CSV", data=macro_forex_corr_csv, file_name='macro_forex_correlation_matrix.csv', mime='text/csv')

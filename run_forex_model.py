@@ -66,17 +66,10 @@ def run_forex_model(
     macro_adjustments=None,
     future_years=10
 ):
-    """
-    selected_currencies: list of currency pairs like ['USD-EUR', 'USD-JPY']
-    selected_macros: list of macro indicators
-    selected_model: 'OLS', 'Lasso', or 'XGBoost'
-    macro_adjustments: dict like {'Interest Rate': 0.5}
-    future_years: prediction horizon (int)
-    """
-    
     full_df, forex = load_and_prepare_data()
     all_real_metrics = []
     all_future_preds = []
+    all_test_predictions = []  # NEW: to store actual vs predicted for 2023–2025
 
     for selected_currency in selected_currencies:
         target_column = selected_currency + " Return"
@@ -118,6 +111,15 @@ def run_forex_model(
             "RMSE": rmse,
         })
 
+        # NEW: Store actual vs predicted test set results
+        test_df_comp = pd.DataFrame({
+            'DATE': y_test.index,
+            'Currency': selected_currency,
+            'Actual_Return': y_test.values,
+            'Predicted_Return': preds
+        })
+        all_test_predictions.append(test_df_comp)
+
         # Predict future
         last_known_macros = train_df[available_macros].iloc[-1]
         months = future_years * 12
@@ -150,5 +152,6 @@ def run_forex_model(
 
     real_metrics_df = pd.DataFrame(all_real_metrics)
     future_predictions_df = pd.concat(all_future_preds)
+    test_prediction_df = pd.concat(all_test_predictions) if all_test_predictions else pd.DataFrame()
 
-    return real_metrics_df, future_predictions_df
+    return real_metrics_df, future_predictions_df, test_prediction_df

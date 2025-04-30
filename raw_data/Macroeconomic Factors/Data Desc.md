@@ -11,5 +11,5 @@
 | **Consumer Sentiment**    | `UMCSENT`     | FRED       | Monthly       | University of Michigan index reflecting consumer confidence in the economy |
 | **Retail Sales**          | `RSAFS`       | FRED       | Monthly       | Total monthly sales in the retail sector |
 | **Manufacturing PMI**     | `NAPM`        | FRED       | Monthly       | ISM Manufacturing Purchasing Managers’ Index; >50 = expansion |
-| **S&P 500 Index (optional)** | `SP500`    | FRED       | Monthly       | Broad stock market index of 500 large U.S. companies |
-| **VIX Index (optional)**  | `VIXCLS`      | FRED       | Monthly       | Market volatility index derived from S&P 500 options (fear gauge) |
+| **S&P 500 Index (optional)** | `SP500`    | Bloomberg Terminal       | Monthly       | Broad stock market index of 500 large U.S. companies |
+| **VIX Index (optional)**  | `VIXCLS`      | Bloomberg Terminal       | Monthly       | Market volatility index derived from S&P 500 options (fear gauge) |
