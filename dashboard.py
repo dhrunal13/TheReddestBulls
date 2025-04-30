@@ -121,7 +121,7 @@ with tab3:
     st.markdown("---")
     st.markdown("### Macroeconomic Factors Description")
     try:
-        with open("raw_data/Macroeconomic Factors/ForexDataDesc.md", "r", encoding='utf-8') as file:
+        with open("raw_data/Macroeconomic Factors/macro_desc.md", "r", encoding='utf-8') as file:
             macro_desc_text = file.read()
         st.markdown(macro_desc_text)
     except FileNotFoundError:
@@ -137,6 +137,34 @@ with tab3:
 
     st.markdown("---")
     st.markdown("### Raw Data Snapshots")
+
+    st.markdown("#### Macro Data Preview")
+    try:
+        macro_df = pd.read_csv("raw_data/Macroeconomic Factors/macro_data.csv", parse_dates=["DATE"])
+        st.dataframe(macro_df.head())
+    except FileNotFoundError:
+        st.error("Macro data CSV not found.")
+
+    st.markdown("#### Forex Data Preview")
+    try:
+        forex_df = pd.read_csv("raw_data/Forex Rates/forex_merged_cleaned.csv", parse_dates=["DATE"])
+        st.dataframe(forex_df.head())
+    except FileNotFoundError:
+        st.error("Forex data CSV not found.")
+
+    st.markdown("### Download Full EDA Reports")
+
+    try:
+        with open("macro_eda_report.html", "rb") as macro_file:
+            st.download_button("Download Macro EDA Report", macro_file, file_name="macro_eda_report.html", mime="text/html")
+    except FileNotFoundError:
+        st.error("Macro EDA HTML file not found.")
+
+    try:
+        with open("forex_eda_report.html", "rb") as forex_file:
+            st.download_button("Download Forex EDA Report", forex_file, file_name="forex_eda_report.html", mime="text/html")
+    except FileNotFoundError:
+        st.error("Forex EDA HTML file not found.")
 
 with tab4:
     st.markdown("## Static Analysis")
