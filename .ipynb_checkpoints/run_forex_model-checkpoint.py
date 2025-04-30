@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import Lasso, LassoCV
-from sklean.model_selection import TimeSeriesSplit
+from sklearn.model_selection import TimeSeriesSplit
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
 from xgboost import XGBRegressor
