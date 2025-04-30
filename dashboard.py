@@ -115,7 +115,6 @@ with tab2:
     """)
 
 with tab3:
-with tab3:
     st.markdown("## Data Overview and Explorer")
 
     st.write("""
