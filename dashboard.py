@@ -115,6 +115,7 @@ with tab2:
     """)
 
 with tab3:
+with tab3:
     st.markdown("## Data Overview and Explorer")
 
     st.write("""
@@ -130,7 +131,7 @@ with tab3:
     st.markdown("---")
     st.markdown("### Macroeconomic Factors Description")
     try:
-        with open("raw_data/Macroeconomic Factors/macro_desc.md", "r", encoding='utf-8') as file:
+        with open("macro_desc.md", "r", encoding='utf-8') as file:
             macro_desc_text = file.read()
         st.markdown(macro_desc_text)
     except FileNotFoundError:
@@ -138,7 +139,7 @@ with tab3:
 
     st.markdown("### Forex Rates Description")
     try:
-        with open("raw_data/Forex Rates/forex_desc.md", "r", encoding='utf-8') as file:
+        with open("forex_desc.md", "r", encoding='utf-8') as file:
             forex_desc_text = file.read()
         st.markdown(forex_desc_text)
     except FileNotFoundError:
@@ -149,14 +150,14 @@ with tab3:
 
     st.markdown("#### Macro Data Preview")
     try:
-        macro_df = pd.read_csv("raw_data/Macroeconomic Factors/macro_data.csv", parse_dates=["DATE"])
+        macro_df = pd.read_csv("macro_data.csv", parse_dates=["DATE"])
         st.dataframe(macro_df.head())
     except FileNotFoundError:
         st.error("Macro data CSV not found.")
 
     st.markdown("#### Forex Data Preview")
     try:
-        forex_df = pd.read_csv("raw_data/Forex Rates/forex_merged_cleaned.csv", parse_dates=["DATE"])
+        forex_df = pd.read_csv("forex_merged_cleaned.csv", parse_dates=["DATE"])
         st.dataframe(forex_df.head())
     except FileNotFoundError:
         st.error("Forex data CSV not found.")
