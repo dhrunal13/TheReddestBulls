@@ -130,17 +130,30 @@ with tab3:
     st.markdown("---")
     st.markdown("### Macroeconomic Factors Description")
     st.markdown("""
-    <div style='padding: 10px; background-color: #1e1e1e; border-left: 4px solid #C41E3A;'>
-    The macroeconomic dataset contains monthly data from FRED on key indicators such as interest rates, inflation, 
-    industrial production, trade balance, unemployment, consumer sentiment, and risk indices like the VIX and S&P 500. 
-    These variables were selected due to their theoretical and empirical linkages with FX movements and were preprocessed 
-    to remove missing values and align frequencies for modeling purposes.
+    <div style='
+        padding: 15px; 
+        background-color: #f9f9f9; 
+        border-left: 4px solid #C41E3A;
+        border-radius: 4px;
+        font-size: 16px;
+        line-height: 1.6;
+    '>
+        The macroeconomic dataset contains monthly data from FRED on key indicators such as interest rates, inflation, 
+        industrial production, trade balance, unemployment, consumer sentiment, and risk indices like the VIX and S&P 500. 
+        These variables were selected due to their theoretical and empirical linkages with FX movements and were preprocessed 
+        to remove missing values and align frequencies for modeling purposes.
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("### Forex Rates Description")
     st.markdown("""
-    <div style='padding: 10px; background-color: #1e1e1e; border-left: 4px solid #C41E3A;'>
+    <div style='
+        padding: 15px; 
+        background-color: #f9f9f9; 
+        border-left: 4px solid #C41E3A;
+        border-radius: 4px;
+        font-size: 16px;
+        line-height: 1.6;'>
     The forex dataset includes monthly exchange rates for ten major USD pairs (e.g., USD-EUR, USD-JPY, USD-XAU). 
     Each pair was transformed into log returns to stabilize variance and capture relative changes in value. 
     These returns were then aligned with the macroeconomic data for use in forecasting models.

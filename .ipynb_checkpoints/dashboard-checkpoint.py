@@ -129,24 +129,68 @@ with tab3:
 
     st.markdown("---")
     st.markdown("### Macroeconomic Factors Description")
-    try:
-        with open("raw_data/Macroeconomic Factors/ForexDataDesc.md", "r", encoding='utf-8') as file:
-            macro_desc_text = file.read()
-        st.markdown(macro_desc_text)
-    except FileNotFoundError:
-        st.error("Macro description file not found.")
+    st.markdown("""
+    <div style='
+        padding: 15px; 
+        background-color: #f9f9f9; 
+        border-left: 4px solid #C41E3A;
+        border-radius: 4px;
+        font-size: 16px;
+        line-height: 1.6;
+    '>
+        The macroeconomic dataset contains monthly data from FRED on key indicators such as interest rates, inflation, 
+        industrial production, trade balance, unemployment, consumer sentiment, and risk indices like the VIX and S&P 500. 
+        These variables were selected due to their theoretical and empirical linkages with FX movements and were preprocessed 
+        to remove missing values and align frequencies for modeling purposes.
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("### Forex Rates Description")
-    try:
-        with open("raw_data/Forex Rates/forex_desc.md", "r", encoding='utf-8') as file:
-            forex_desc_text = file.read()
-        st.markdown(forex_desc_text)
-    except FileNotFoundError:
-        st.error("Forex description file not found.")
+    st.markdown("""
+    <div style='
+        padding: 15px; 
+        background-color: #f9f9f9; 
+        border-left: 4px solid #C41E3A;
+        border-radius: 4px;
+        font-size: 16px;
+        line-height: 1.6;'>
+    The forex dataset includes monthly exchange rates for ten major USD pairs (e.g., USD-EUR, USD-JPY, USD-XAU). 
+    Each pair was transformed into log returns to stabilize variance and capture relative changes in value. 
+    These returns were then aligned with the macroeconomic data for use in forecasting models.
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("### Raw Data Snapshots")
 
+    st.markdown("#### Macro Data Preview")
+    try:
+        macro_df = pd.read_csv("macro_data.csv", parse_dates=["DATE"])
+        st.dataframe(macro_df.head())
+    except FileNotFoundError:
+        st.error("Macro data CSV not found.")
+
+    st.markdown("#### Forex Data Preview")
+    try:
+        forex_df = pd.read_csv("forex_merged_cleaned.csv", parse_dates=["DATE"])
+        st.dataframe(forex_df.head())
+    except FileNotFoundError:
+        st.error("Forex data CSV not found.")
+
+    st.markdown("### Download Full EDA Reports")
+
+    try:
+        with open("macro_eda_report.html", "rb") as macro_file:
+            st.download_button("Download Macro EDA Report", macro_file, file_name="macro_eda_report.html", mime="text/html")
+    except FileNotFoundError:
+        st.error("Macro EDA HTML file not found.")
+
+    try:
+        with open("forex_eda_report.html", "rb") as forex_file:
+            st.download_button("Download Forex EDA Report", forex_file, file_name="forex_eda_report.html", mime="text/html")
+    except FileNotFoundError:
+        st.error("Forex EDA HTML file not found.")
+        
 with tab4:
     st.markdown("## Static Analysis")
     st.write("""
