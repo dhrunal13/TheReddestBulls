@@ -156,6 +156,7 @@ with tab5:
     
     - OLS Regression
     - Lasso Regression
+    - LassoCV Regression
     - XGBoost Regression
 
     Metrics to be compared:
@@ -182,7 +183,7 @@ with tab6:
     ]
     selected_macros = st.multiselect("Select Macroeconomic Indicators", options=macro_options, default=['Interest Rate', 'Inflation (CPI)'])
 
-    model_choice = st.selectbox("Select Model", ["OLS", "Lasso", "XGBoost"])
+    model_choice = st.selectbox("Select Model", ["OLS", "Lasso", "LassoCV", "XGBoost"])
     forecast_years = st.number_input("Select Forecast Horizon - Years (Enter a number between 1 to 20)", min_value=1, max_value=20, value=5, step=1)
 
     st.markdown("---")

@@ -1,10 +1,14 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, LassoCV
+from sklean.model_selection import TimeSeriesSplit
+from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
 from xgboost import XGBRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import statsmodels.api as sm
+
 
 # ---------------------------------------
 # Load and prepare data
@@ -53,6 +57,18 @@ def train_model(X_train, y_train, selected_model):
         X_train_const = sm.add_constant(X_train, has_constant='add')
         model = sm.OLS(y_train, X_train_const).fit()
         return model, None
+    elif selected_model == 'LassoCV':
+        transformer = Pipeline([('scaler', StandardScaler()),
+                                 ('pca', PCA(n_components = 0.975)) # min components needed to explain 97.5% of the variance in data
+                               ])
+        X_reduced = transformer.fit_transform(X_train)
+        model = LassoCV(cv = TimeSeriesSplit(n_splits = 5), # randomized sections that respect time path
+                        max_iter = 10000,
+                        tol = 1e-3,
+                       )
+        model.fit(X_reduced, y_train)
+            
+        return model, transformer
     else:
         raise ValueError(f"Model {selected_model} not supported.")
 
