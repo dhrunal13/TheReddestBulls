@@ -1,6 +1,7 @@
 # dashboard.py
 
 import streamlit as st
+from PIL import Image
 import pandas as pd
 import numpy as np
 import pickle
@@ -34,10 +35,18 @@ set_background()
 # ---------------------------------
 # Main Title (Shown on every page)
 # ---------------------------------
-st.markdown("<h1 style='text-align: center; color: #C41E3A;'>The Reddest Bulls</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: gray;'>Macroeconomic Drivers of FX Rates</h4>", unsafe_allow_html=True)
-st.markdown("<hr style='border:1px solid #C41E3A'>", unsafe_allow_html=True)
+logo = Image.open("Logo.png")  # Your logo file
 
+st.markdown("""
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <img src="https://raw.githubusercontent.com/dhrunal13/thereddestbulls/main/Logo.png" alt="Logo" style="height:150px;">
+        <div>
+            <h1 style="margin: 0; color: #C41E3A;">The Reddest Bulls</h1>
+            <h4 style="margin: 0; color: gray;">Macroeconomic Drivers of FX Rates</h4>
+        </div>
+    </div>
+    <hr style='border:1px solid #C41E3A'>
+""", unsafe_allow_html=True)
 # ---------------------------------
 # Top Navigation Tabs
 # ---------------------------------
