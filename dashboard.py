@@ -196,13 +196,25 @@ with tab3:
         
 with tab4:
     st.markdown("## Static Analysis")
-    st.write("""
-    Review results from OLS regressions measuring the sensitivity of FX rates to macroeconomic variables.
 
-    Features coming soon:
-    - Coefficient tables
-    - P-values and significance highlights
-    - Cross-currency comparisons
+    st.write("""
+    This section presents the results of our OLS regressions, highlighting how key U.S. macroeconomic factors — 
+    such as interest rates, inflation, industrial production, and risk sentiment — influence major USD currency pairs.
+
+    The heatmap below displays the regression coefficients across a 10x10 macro-currency grid.
+    Values are underlined if they are statistically significant at the 5% level, helping to pinpoint which relationships are 
+    both economically meaningful and statistically robust.
+    """)
+
+    st.image("Untitled.png", caption="OLS Coefficient Heatmap (Underline = Stat. Significant)", use_column_width=True)
+
+    st.write("""
+    **How to read this heatmap:**
+    - Each cell shows the estimated coefficient from the OLS regression for a given macro factor on a specific currency pair.
+    - Red shades indicate a positive relationship, blue shades indicate a negative relationship.
+    - Underlined values mark coefficients that are statistically significant (p < 0.05).
+    
+    This static analysis helps uncover cross-currency patterns and the relative importance of different macroeconomic drivers.
     """)
 
 with tab5:
