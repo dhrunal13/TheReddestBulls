@@ -92,7 +92,7 @@ with tab1:
     - **Hypotheses**: Explore the economic theories and relationships we are testing.
     - **Data Explorer**: Visualize historical FX rates and macroeconomic indicators.
     - **Static Analysis**: Review OLS regression outputs and significance testing.
-    - **Forecasting Models**: Compare the predictive accuracy of OLS versus machine learning models.
+    - **Forecasting Models**: Explains what the model does in a simple manner for a third party (maybe not proficient at coding).
     - **Scenario Simulator**: Adjust macro variables and simulate FX outcomes dynamically.
     
     ---
