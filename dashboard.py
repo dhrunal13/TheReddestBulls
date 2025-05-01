@@ -192,14 +192,99 @@ with tab3:
         st.error("Forex EDA HTML file not found.")
         
 with tab4:
-    st.markdown("## Static Analysis")
-    st.write("""
-    Review results from OLS regressions measuring the sensitivity of FX rates to macroeconomic variables.
+    st.markdown("## How the Model Works")
 
-    Features coming soon:
-    - Coefficient tables
-    - P-values and significance highlights
-    - Cross-currency comparisons
+    st.write( """
+    This section provides a complete explanation of how we built, trained, and used our models to analyze and forecast foreign exchange (FX) rates.
+
+    We designed the modeling process to be flexible, interpretable, and aligned with economic intuition. Here's how it works from start to finish:
+
+    ### 1. Data Collection and Integration
+
+    We use two main sources of data:
+
+    - **Macroeconomic Indicators:** These include variables like interest rates, inflation (CPI), industrial production, unemployment, consumer sentiment, and more. They are pulled from public datasets, mainly the Federal Reserve Economic Data (FRED).
+    
+    - **Foreign Exchange Rates:** Monthly FX rates for 10 major currency pairs against the U.S. Dollar (e.g., USD-EUR, USD-JPY, USD-GBP). We cleaned and standardized them for analysis.
+
+    The two datasets are merged by date to create one unified dataset that captures both economic drivers and market outcomes.
+
+    ### 2. Why We Use Log Returns
+
+    Exchange rates are typically non-stationary, meaning their average and variance change over time. This makes prediction difficult. To address this, we convert exchange rate values into **log returns**, which are more stable and interpretable.
+
+    Log returns help us focus on relative changes, like “how much did the currency move this month compared to last month,” rather than absolute price levels.
+
+    ### 3. Feature Engineering
+
+    Economic changes often don’t affect currency markets instantly. For example, a rise in interest rates may take several months to influence exchange rates.
+
+    To capture this delayed effect, we add:
+
+    - **Lagged values** (1 to 60 months): These let the model look back in time to see recent trends.
+    - **Rolling averages and standard deviations:** These summarize the recent behavior of macro indicators — how fast they’re rising, how volatile they are, etc.
+
+    These added features help the model understand patterns over time, not just one snapshot.
+
+    ### 4. Train/Test Split
+
+    To evaluate how well our models generalize to new data, we split the dataset:
+
+    - **Training data:** Includes all observations up to December 2022
+    - **Testing data:** Covers January 2023 onward
+
+    We train the models only on the training set, and then test them on unseen data to evaluate performance fairly.
+
+    ### 5. Model Options and Why We Chose Them
+
+    The dashboard supports three types of models. Each serves a different purpose:
+
+    - **Ordinary Least Squares (OLS):**
+        - Simple linear regression
+        - Easy to interpret
+        - Good for understanding the strength and direction of relationships
+        - However, it may struggle when too many features are added or when the relationships are non-linear
+
+    - **Lasso Regression:**
+        - A version of linear regression that penalizes complexity
+        - Helps automatically select the most important features
+        - Useful when you have many input variables (which we do after feature engineering)
+
+    - **XGBoost:**
+        - A powerful machine learning model that builds decision trees
+        - Very effective for capturing complex, non-linear relationships
+        - Often gives the best accuracy but is harder to interpret
+
+    Users can switch between these models to compare performance and see which performs better for a given currency and set of macro indicators.
+
+    ### 6. Model Evaluation
+
+    After training, we evaluate the models using the testing data. We look at:
+
+    - **R² Score:** How well the model explains the variation in returns (higher is better)
+    - **Mean Absolute Error (MAE):** Average size of prediction errors
+    - **Root Mean Squared Error (RMSE):** Similar to MAE but penalizes large errors more
+
+    These metrics are displayed in the dashboard so users can understand how reliable each model is.
+
+    We also show a line graph comparing **actual vs predicted** returns on the test set, so users can visually assess how close the model gets to reality.
+
+    ### 7. Forecasting Future Exchange Rates
+
+    Once a model is trained, we use it to simulate future FX rates. This is how:
+
+    - We start with the most recent known macroeconomic values (as of December 2022)
+    - Users can adjust those values using sliders (e.g., increase interest rate by 0.5%)
+    - We apply the model to forecast monthly returns for the next 1 to 20 years
+    - These returns are converted back into forecasted exchange rates using compounding
+
+    The dashboard plots these forecasts and allows users to download the data.
+
+    ### 8. Summary
+
+    In simple terms, we are training a machine to learn how macroeconomic factors have influenced currency movements in the past. Then we use that machine to simulate how future macro conditions might affect FX rates.
+
+    The goal is not just to predict the future, but to explore “what-if” scenarios and better understand the link between economic fundamentals and global currency markets.
     """)
 
 with tab5:
